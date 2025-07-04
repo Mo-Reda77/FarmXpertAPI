@@ -34,7 +34,9 @@ http://farmxpertapi.runasp.net/api/Veterinarians/{id}
 http://farmxpertapi.runasp.net/api/Veterinarians/UpdateVeterinar/{id}
 
 http://farmxpertapi.runasp.net/api/Veterinarians/delete/{id}
+
 ########################### Cattles #########################
+
 http://farmxpertapi.runasp.net/api/Cattle/AddCattle
 
 http://farmxpertapi.runasp.net/api/Cattle/DeleteCattle/id
@@ -54,8 +56,13 @@ http://farmxpertapi.runasp.net/api/Weather/weather
 #########################################################
 
 http://farmxpertapi.runasp.net/api/MilkProduction/GetCattlesByTypeAndGender
+
 http://farmxpertapi.runasp.net/api/MilkProduction/Add
+
 http://farmxpertapi.runasp.net/api/ MilkProduction/AddMultiple
+
 http://farmxpertapi.runasp.net/api/MilkProduction/Edit/{id}
+
 http://farmxpertapi.runasp.net/api/MilkProduction/Delete/{id}
+
 http://farmxpertapi.runasp.net/api/MilkProduction/All
