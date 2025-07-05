@@ -41,7 +41,7 @@ namespace FarmXpert
 
             builder.Services.AddAuthorization();
             builder.Services.AddSignalR();
-            // Œœ„«  «·ÿﬁ” +  ‰»ÌÂ« 
+            // √é√è√£√á√ä √á√°√ò√û√ì + √ä√§√à√≠√•√á√ä
             builder.Services.AddHttpClient<IWeatherService, OpenWeatherService>();
             builder.Services.AddScoped<IAlertService, AlertService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -90,6 +90,13 @@ namespace FarmXpert
                     }
                 });
             });
+            //HTTPS
+            //builder.Services.AddHttpsRedirection(options =>
+            //{
+                //options.HttpsPort = 5001;
+            //});
+            ///////////////////////////////////////////////////
+
 
             var app = builder.Build();
 
@@ -99,6 +106,7 @@ namespace FarmXpert
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            //app.UseHttpsRedirection();   //HTTPS
             app.UseStaticFiles();
             app.UseCors("AllowAll");
 
@@ -106,7 +114,7 @@ namespace FarmXpert
             app.UseMiddleware<TokenRevocationMiddleware>();
 
             app.UseAuthorization();
-            //  ”ÃÌ· «·‹ Hub ›Ì pipeline
+            // √ä√ì√å√≠√° √á√°√ú Hub √ù√≠ pipeline
             app.MapHub<NotificationHub>("/notificationHub");
             app.MapControllers();
            
