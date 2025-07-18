@@ -1,0 +1,6 @@
+@FarmXpert_HostAddress = http://localhost:5055
+
+GET {{FarmXpert_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
