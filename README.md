@@ -27,6 +27,9 @@ This system provides a robust backend API built with **ASP.NET Core**, **Entity 
 
 > ⚠️ Note: Most API endpoints require authentication. Only the weather endpoint is public.
 
+### 🔍 Swagger UI: 👉
+🔗https://farmxpertapi.runasp.net/swagger/index.html
+
 ### ✅ Web Dashboard
 🔗 [https://farm-expert-next.vercel.app/en](https://farm-expert-next.vercel.app/en)  
 This is a website linked to the above API, providing a full dashboard for managing the smart farm.
