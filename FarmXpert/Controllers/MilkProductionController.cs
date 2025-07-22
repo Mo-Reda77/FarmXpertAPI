@@ -137,14 +137,51 @@ namespace FarmXpert.Controllers
         }
 
 
+        
         [HttpGet("All")]
-        public async Task<IActionResult> GetAllMilkProduction()
+        public async Task<IActionResult> GetAllMilkProduction(
+         [FromQuery] int? page = null,
+         [FromQuery] int? pageSize = null,
+         [FromQuery] string? sort = null,        
+         [FromQuery] string? sortBy = null       
+ )
         {
             var farmId = int.Parse(User.FindFirst("FarmId")?.Value ?? "0");
 
-            var data = await _farmDb.MilkProductions
-                .Where(m => m.FarmID == farmId)
-                .OrderByDescending(m => m.Date)
+            var query = _farmDb.MilkProductions
+                .Where(m => m.FarmID == farmId);
+
+            var totalCount = await query.CountAsync();
+
+            sort = sort?.ToLower();
+            sortBy = sortBy?.ToLower();
+
+            switch (sortBy)
+            {
+                case "total":
+                    query = sort == "desc"
+                        ? query.OrderByDescending(m => m.Total)
+                        : query.OrderBy(m => m.Total);
+                    break;
+
+                default:
+                    query = sort == "desc"
+                        ? query.OrderByDescending(m => m.Date)
+                        : query.OrderBy(m => m.Date);
+                    break;
+            }
+
+            int currentPage = page ?? 1;
+            int currentPageSize = pageSize ?? totalCount;
+            int totalPages = (int)Math.Ceiling((double)totalCount / currentPageSize);
+
+            if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
+            {
+                int skip = (currentPage - 1) * currentPageSize;
+                query = query.Skip(skip).Take(currentPageSize);
+            }
+
+            var data = await query
                 .Select(m => new
                 {
                     m.Id,
@@ -159,7 +196,14 @@ namespace FarmXpert.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(data);
+            return Ok(new
+            {
+                currentPage,
+                pageSize = currentPageSize,
+                totalPages,
+                totalCount,
+                data
+            });
         }
 
 
