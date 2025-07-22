@@ -91,14 +91,45 @@ namespace FarmXpert.Controllers
         }
 
 
-        [HttpGet("AllEvents")]
-        public async Task<IActionResult> GetAllEvents()
+                [HttpGet("AllEvents")]
+        public async Task<IActionResult> GetAllEvents(
+        [FromQuery] int? page = null,
+        [FromQuery] int? pageSize = null,
+        [FromQuery] string? sort = null,            // "asc" أو "desc"
+        [FromQuery] string? eventType = null         // نوع الحدث
+)
         {
             var farmId = int.Parse(User.FindFirst("FarmId")?.Value ?? "0");
 
-            var events = await _farmDb.CattleEvents
-                .Where(e => e.FarmID == farmId)
-                .OrderByDescending(e => e.Date)
+            var query = _farmDb.CattleEvents
+                .Where(e => e.FarmID == farmId);
+
+            // فلترة حسب نوع الحدث
+            if (!string.IsNullOrEmpty(eventType))
+            {
+                query = query.Where(e => e.EventType.ToLower() == eventType.ToLower());
+            }
+
+            // إجمالي النتائج
+            var totalCount = await query.CountAsync();
+
+            // ترتيب حسب التاريخ
+            query = sort?.ToLower() == "desc"
+                ? query.OrderByDescending(e => e.Date)
+                : query.OrderBy(e => e.Date);  // الافتراضي: asc
+
+            int currentPage = page ?? 1;
+            int currentPageSize = pageSize ?? totalCount;
+
+            int totalPages = (int)Math.Ceiling((double)totalCount / currentPageSize);
+
+            if (page != null && pageSize != null && page > 0 && pageSize > 0)
+            {
+                int skip = (currentPage - 1) * currentPageSize;
+                query = query.Skip(skip).Take(currentPageSize);
+            }
+
+            var events = await query
                 .Select(e => new
                 {
                     e.Id,
@@ -115,7 +146,14 @@ namespace FarmXpert.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(events);
+            return Ok(new
+            {
+                currentPage,
+                pageSize = currentPageSize,
+                totalPages,
+                totalCount,
+                data = events
+            });
         }
 
 
