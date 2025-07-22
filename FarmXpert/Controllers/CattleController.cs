@@ -89,28 +89,57 @@ public class CattleController : ControllerBase
         return Ok(new { message = "Cattle deleted successfully" });
     }
     [HttpGet("GetCattlesByType/{type}")]
-    public async Task<IActionResult> GetCattlesByType(string type)
+    public async Task<IActionResult> GetCattlesByType(
+    string type,
+    [FromQuery] int? page = null,
+    [FromQuery] int? pageSize = null,
+    [FromQuery] string? sort = null,            // asc أو desc
+    [FromQuery] string? sortBy = null        // weight أو age
+)
     {
         var managerFarmId = int.Parse(User.FindFirst("FarmId")?.Value ?? "0");
 
-        var cattles = await _FarmDb.Cattle
-            .Where(c => c.Type == type && c.FarmID == managerFarmId)
+        var query = _FarmDb.Cattle
+            .Where(c => c.Type == type && c.FarmID == managerFarmId);
+
+        // Sort by Weight
+        query = sort?.ToLower() == "desc"
+            ? query.OrderByDescending(c => c.Weight)
+            : query.OrderBy(c => c.Weight);
+
+        var totalCount = await query.CountAsync();
+
+        int currentPage = page ?? 1;
+        int currentPageSize = pageSize ?? totalCount;
+        int totalPages = (int)Math.Ceiling((double)totalCount / currentPageSize);
+
+        if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
+        {
+            int skip = (currentPage - 1) * currentPageSize;
+            query = query.Skip(skip).Take(currentPageSize);
+        }
+
+        var cattles = await query
             .Select(c => new
             {
                 c.CattleID,
                 c.Type,
                 c.Weight,
                 c.Gender,
-                c.Age,
-                
+                c.Age
             })
             .ToListAsync();
 
-        if (!cattles.Any())
-            return NotFound($"No {type} found in your farm");
-
-        return Ok(cattles);
+        return Ok(new
+        {
+            currentPage,
+            pageSize = currentPageSize,
+            totalPages,
+            totalCount,
+            data = cattles
+        });
     }
+
     [HttpGet("GetCattleByTypeAndId/{type}/{id}")]
     public async Task<IActionResult> GetCattleByTypeAndId(string type, int id)
     {
